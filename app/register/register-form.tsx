@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -16,22 +16,27 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
-// Define schemas for different user types
+// Define a base schema with common fields
+const baseSchema = {
+  firstName: z.string().min(2, { message: "First name must be at least 2 characters." }),
+  lastName: z.string().min(2, { message: "Last name must be at least 2 characters." }),
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  password: z.string().min(8, { message: "Password must be at least 8 characters." }),
+  confirmPassword: z.string(),
+  termsAccepted: z.boolean().refine((val) => val === true, {
+    message: "You must accept the terms and conditions.",
+  }),
+}
+
+// Create separate schemas for each user type
 const patientSchema = z
   .object({
+    ...baseSchema,
     userType: z.literal("patient"),
-    firstName: z.string().min(2, { message: "First name must be at least 2 characters." }),
-    lastName: z.string().min(2, { message: "Last name must be at least 2 characters." }),
-    email: z.string().email({ message: "Please enter a valid email address." }),
-    password: z.string().min(8, { message: "Password must be at least 8 characters." }),
-    confirmPassword: z.string(),
     dateOfBirth: z.string().min(1, { message: "Date of birth is required." }),
-    gender: z.enum(["male", "female", "other", "prefer-not-to-say"]),
+    gender: z.string().min(1, { message: "Please select a gender." }),
     phone: z.string().min(10, { message: "Please enter a valid phone number." }),
     address: z.string().min(5, { message: "Address must be at least 5 characters." }),
-    termsAccepted: z.literal(true, {
-      errorMap: () => ({ message: "You must accept the terms and conditions." }),
-    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -40,19 +45,12 @@ const patientSchema = z
 
 const doctorSchema = z
   .object({
+    ...baseSchema,
     userType: z.literal("doctor"),
-    firstName: z.string().min(2, { message: "First name must be at least 2 characters." }),
-    lastName: z.string().min(2, { message: "Last name must be at least 2 characters." }),
-    email: z.string().email({ message: "Please enter a valid email address." }),
-    password: z.string().min(8, { message: "Password must be at least 8 characters." }),
-    confirmPassword: z.string(),
     specialization: z.string().min(2, { message: "Specialization is required." }),
     licenseNumber: z.string().min(5, { message: "License number is required." }),
     phone: z.string().min(10, { message: "Please enter a valid phone number." }),
     hospitalAffiliation: z.string().optional(),
-    termsAccepted: z.literal(true, {
-      errorMap: () => ({ message: "You must accept the terms and conditions." }),
-    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -61,27 +59,22 @@ const doctorSchema = z
 
 const clinicSchema = z
   .object({
+    ...baseSchema,
     userType: z.literal("clinic"),
     clinicName: z.string().min(2, { message: "Clinic name must be at least 2 characters." }),
     adminFirstName: z.string().min(2, { message: "First name must be at least 2 characters." }),
     adminLastName: z.string().min(2, { message: "Last name must be at least 2 characters." }),
-    email: z.string().email({ message: "Please enter a valid email address." }),
-    password: z.string().min(8, { message: "Password must be at least 8 characters." }),
-    confirmPassword: z.string(),
     clinicAddress: z.string().min(5, { message: "Address must be at least 5 characters." }),
     clinicPhone: z.string().min(10, { message: "Please enter a valid phone number." }),
     clinicType: z.string().min(2, { message: "Clinic type is required." }),
     registrationNumber: z.string().min(5, { message: "Registration number is required." }),
-    termsAccepted: z.literal(true, {
-      errorMap: () => ({ message: "You must accept the terms and conditions." }),
-    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
   })
 
-// Union type for all schemas
+// Create a discriminated union schema with userType as the discriminator
 const formSchema = z.discriminatedUnion("userType", [patientSchema, doctorSchema, clinicSchema])
 
 export default function RegisterForm() {
@@ -90,8 +83,15 @@ export default function RegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState("")
   const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  // Set mounted state to true after component mounts
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Initialize form with default values including userType
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       userType: "patient" as const,
@@ -100,24 +100,56 @@ export default function RegisterForm() {
       email: "",
       password: "",
       confirmPassword: "",
+      dateOfBirth: "",
+      gender: "",
+      phone: "",
+      address: "",
+      specialization: "",
+      licenseNumber: "",
+      hospitalAffiliation: "",
+      clinicName: "",
+      adminFirstName: "",
+      adminLastName: "",
+      clinicAddress: "",
+      clinicPhone: "",
+      clinicType: "",
+      registrationNumber: "",
       termsAccepted: false,
     },
   })
 
-  const handleTabChange = (value: string) => {
+  // Update the form validation schema when the active tab changes
+  const handleTabChange = (value) => {
+    if (!mounted) return
+
     setActiveTab(value)
-    form.setValue("userType", value as "patient" | "doctor" | "clinic")
-    form.reset({
-      userType: value as "patient" | "doctor" | "clinic",
-      termsAccepted: false,
+
+    // Update the userType field based on the selected tab
+    form.setValue("userType", value as "patient" | "doctor" | "clinic", {
+      shouldValidate: false,
+      shouldDirty: true,
     })
+
+    form.reset(
+      {
+        ...form.getValues(),
+        userType: value as "patient" | "doctor" | "clinic",
+      },
+      {
+        keepValues: true,
+        keepDirty: false,
+        keepErrors: false,
+        keepTouched: false,
+        keepIsSubmitted: false,
+        keepSubmitCount: false,
+      },
+    )
+
     setSubmitError("")
     setSubmitSuccess(false)
   }
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!values.userType) return // Prevent processing if userType is undefined
-
+  async function onSubmit(values) {
     setIsSubmitting(true)
     setSubmitError("")
 
@@ -146,6 +178,15 @@ export default function RegisterForm() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  // Don't render anything until component is mounted
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (
@@ -183,6 +224,7 @@ export default function RegisterForm() {
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  {/* Hidden userType field */}
                   <input type="hidden" {...form.register("userType")} />
 
                   {/* Patient Registration Fields */}
@@ -282,7 +324,7 @@ export default function RegisterForm() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Gender</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select gender" />
@@ -415,7 +457,7 @@ export default function RegisterForm() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Specialization</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select specialization" />
@@ -610,7 +652,7 @@ export default function RegisterForm() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Clinic Type</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select clinic type" />

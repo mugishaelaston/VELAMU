@@ -2,7 +2,8 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,13 +13,17 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Heart } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { useRouter, useSearchParams } from "next/navigation"
+import { toast } from "sonner"
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [activeTab, setActiveTab] = useState("patient")
+
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectPath = searchParams.get("redirect") || "/dashboard"
+  const redirectPath = searchParams.get("redirect") || getDefaultRedirectPath(activeTab)
 
   // Image slider state
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -41,35 +46,61 @@ export default function LoginPage() {
   ]
 
   // Auto-advance slides
-  useEffect(() => {
+  useState(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length)
     }, 5000)
     return () => clearInterval(interval)
-  }, [slides.length])
+  })
+
+  function getDefaultRedirectPath(userType: string) {
+    switch (userType) {
+      case "patient":
+        return "/patient-portal"
+      case "doctor":
+        return "/doctors-portal"
+      case "clinic":
+        return "/clinics-portal"
+      case "admin":
+        return "/admin-portal"
+      default:
+        return "/patient-portal"
+    }
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulate login process
-    setTimeout(() => {
-      // Set a cookie to simulate authentication
-      document.cookie = "auth_token=dummy_token; path=/; max-age=86400"
-      router.push(redirectPath)
-    }, 1500)
-  }
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          userType: activeTab,
+        }),
+      })
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+      const data = await response.json()
 
-    // Simulate registration process
-    setTimeout(() => {
-      // Set a cookie to simulate authentication
-      document.cookie = "auth_token=dummy_token; path=/; max-age=86400"
+      if (!response.ok) {
+        throw new Error(data.error || "Login failed")
+      }
+
+      toast.success("Login successful!")
+
+      // Redirect to the appropriate portal
       router.push(redirectPath)
-    }, 1500)
+    } catch (error) {
+      console.error("Login error:", error)
+      toast.error("Login failed. Please check your credentials and try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -106,7 +137,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right side - Login/Register form */}
+      {/* Right side - Login form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-4 md:p-8">
         <div className="w-full max-w-md">
           <div className="flex items-center justify-center mb-8">
@@ -114,23 +145,31 @@ export default function LoginPage() {
             <h1 className="text-2xl font-bold">MY HEALTH</h1>
           </div>
 
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
+          <Tabs defaultValue="patient" className="w-full" onValueChange={(value) => setActiveTab(value)}>
+            <TabsList className="grid w-full grid-cols-3 mb-8">
+              <TabsTrigger value="patient">Patient</TabsTrigger>
+              <TabsTrigger value="doctor">Doctor</TabsTrigger>
+              <TabsTrigger value="clinic">Clinic</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="login">
+            <TabsContent value="patient">
               <Card>
                 <CardHeader>
-                  <CardTitle>Welcome back</CardTitle>
-                  <CardDescription>Enter your credentials to access your account</CardDescription>
+                  <CardTitle>Patient Login</CardTitle>
+                  <CardDescription>Enter your credentials to access your patient portal</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleLogin}>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" placeholder="name@example.com" required />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="name@example.com"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
@@ -139,7 +178,13 @@ export default function LoginPage() {
                           Forgot password?
                         </Link>
                       </div>
-                      <Input id="password" type="password" required />
+                      <Input
+                        id="password"
+                        type="password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
                     </div>
                     <div className="flex items-center space-x-2">
                       <Checkbox id="remember" />
@@ -160,56 +205,106 @@ export default function LoginPage() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="register">
+            <TabsContent value="doctor">
               <Card>
                 <CardHeader>
-                  <CardTitle>Create an account</CardTitle>
-                  <CardDescription>Enter your information to get started</CardDescription>
+                  <CardTitle>Doctor Login</CardTitle>
+                  <CardDescription>Enter your credentials to access your doctor portal</CardDescription>
                 </CardHeader>
-                <form onSubmit={handleRegister}>
+                <form onSubmit={handleLogin}>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="first-name">First name</Label>
-                        <Input id="first-name" required />
+                    <div className="space-y-2">
+                      <Label htmlFor="doctor-email">Email</Label>
+                      <Input
+                        id="doctor-email"
+                        type="email"
+                        placeholder="doctor@example.com"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="doctor-password">Password</Label>
+                        <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
+                          Forgot password?
+                        </Link>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="last-name">Last name</Label>
-                        <Input id="last-name" required />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-email">Email</Label>
-                      <Input id="register-email" type="email" placeholder="name@example.com" required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-password">Password</Label>
-                      <Input id="register-password" type="password" required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password">Confirm password</Label>
-                      <Input id="confirm-password" type="password" required />
+                      <Input
+                        id="doctor-password"
+                        type="password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="terms" required />
+                      <Checkbox id="doctor-remember" />
                       <label
-                        htmlFor="terms"
+                        htmlFor="doctor-remember"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                       >
-                        I agree to the{" "}
-                        <Link href="/terms" className="text-blue-600 hover:underline">
-                          terms of service
-                        </Link>{" "}
-                        and{" "}
-                        <Link href="/privacy" className="text-blue-600 hover:underline">
-                          privacy policy
-                        </Link>
+                        Remember me
                       </label>
                     </div>
                   </CardContent>
                   <CardFooter>
                     <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
-                      {isLoading ? "Creating account..." : "Create account"}
+                      {isLoading ? "Logging in..." : "Login"}
+                    </Button>
+                  </CardFooter>
+                </form>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="clinic">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Clinic Admin Login</CardTitle>
+                  <CardDescription>Enter your credentials to access your clinic portal</CardDescription>
+                </CardHeader>
+                <form onSubmit={handleLogin}>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="clinic-email">Email</Label>
+                      <Input
+                        id="clinic-email"
+                        type="email"
+                        placeholder="admin@clinic.com"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="clinic-password">Password</Label>
+                        <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
+                          Forgot password?
+                        </Link>
+                      </div>
+                      <Input
+                        id="clinic-password"
+                        type="password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="clinic-remember" />
+                      <label
+                        htmlFor="clinic-remember"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Remember me
+                      </label>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
+                      {isLoading ? "Logging in..." : "Login"}
                     </Button>
                   </CardFooter>
                 </form>
@@ -260,13 +355,9 @@ export default function LoginPage() {
 
           <div className="mt-8 text-center">
             <p className="text-sm text-muted-foreground">
-              By signing up, you agree to our{" "}
-              <Link href="/terms" className="text-blue-600 hover:underline">
-                Terms of Service
-              </Link>{" "}
-              and{" "}
-              <Link href="/privacy" className="text-blue-600 hover:underline">
-                Privacy Policy
+              Don't have an account?{" "}
+              <Link href="/register" className="text-blue-600 hover:underline">
+                Register
               </Link>
             </p>
           </div>
