@@ -64,7 +64,7 @@ const clinicSchema = z
     userType: z.literal("clinic"),
     clinicName: z.string().min(2, { message: "Clinic name must be at least 2 characters." }),
     adminFirstName: z.string().min(2, { message: "First name must be at least 2 characters." }),
-    adminLastName: z.string().min(2, { message: "Last name must be at least 2 characters." }),
+    adminLastName: z.string().min(2, { message: "First name must be at least 2 characters." }),
     email: z.string().email({ message: "Please enter a valid email address." }),
     password: z.string().min(8, { message: "Password must be at least 8 characters." }),
     confirmPassword: z.string(),
@@ -116,6 +116,8 @@ export default function RegisterPage() {
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!values.userType) return // Prevent processing if userType is undefined
+
     setIsSubmitting(true)
     setSubmitError("")
 
