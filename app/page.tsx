@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { FounderSpotlight } from "@/components/founder-spotlight"
 
 export default function Home() {
   return (
@@ -20,6 +21,17 @@ export default function Home() {
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-10 md:mb-0">
               <h1 className="text-4xl md:text-5xl font-bold mb-6">Your Complete Health Monitoring Solution</h1>
+              <div className="flex justify-center mb-8">
+                <div className="relative w-full max-w-md h-32">
+                  <Image
+                    src="/images/my-health-logo.png"
+                    alt="MY HEALTH Logo"
+                    fill
+                    className="object-contain"
+                    priority
+                  />
+                </div>
+              </div>
               <p className="text-xl mb-8 max-w-lg">
                 Track your vital signs, manage appointments, and take control of your health journey with MY HEALTH's
                 comprehensive platform.
@@ -83,6 +95,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Founder Spotlight */}
+      <FounderSpotlight />
 
       {/* Life Suit Section */}
       <section className="py-20">
@@ -188,6 +203,28 @@ export default function Home() {
                 workouts and recovery for better overall health."
               </p>
             </div>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="flex items-center mb-4">
+                <div className="mr-4">
+                  <div className="h-16 w-16 rounded-full overflow-hidden relative">
+                    <Image
+                      src="/images/founder-portrait.png"
+                      alt="Mugisha Elaston Sana"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold">Mugisha Elaston Sana</h4>
+                  <p className="text-sm text-gray-500">Founder & Developer</p>
+                </div>
+              </div>
+              <p className="text-gray-600">
+                "I created MY HEALTH to bridge the gap between patients and healthcare providers. Our mission is to make
+                healthcare accessible to everyone through innovative technology."
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -195,6 +232,11 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-20 bg-blue-600 text-white">
         <div className="container mx-auto px-4 text-center">
+          <div className="flex justify-center mb-8">
+            <div className="relative w-64 h-24">
+              <Image src="/images/my-health-logo.png" alt="MY HEALTH Logo" fill className="object-contain" priority />
+            </div>
+          </div>
           <h2 className="text-3xl font-bold mb-6">Ready to Take Control of Your Health?</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
             Join thousands of users who are already benefiting from MY HEALTH's comprehensive health monitoring

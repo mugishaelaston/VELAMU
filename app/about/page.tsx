@@ -27,7 +27,13 @@ export default function AboutPage() {
           </div>
         </div>
         <div className="relative h-[300px] md:h-[400px] lg:h-[500px]">
-          <Image src="/images/founder.png" alt="MY HEALTH Founder" fill className="object-cover rounded-lg" />
+          <Image
+            src="/images/founder-portrait.png"
+            alt="MY HEALTH Founder"
+            fill
+            className="object-cover rounded-lg"
+            priority
+          />
         </div>
       </div>
 
@@ -37,10 +43,11 @@ export default function AboutPage() {
           <div className="md:col-span-1">
             <div className="relative h-[300px] w-full md:h-[400px]">
               <Image
-                src="/images/founder.png"
+                src="/images/founder-portrait.png"
                 alt="Mugisha Elaston Sana - Founder"
                 fill
                 className="object-cover rounded-lg shadow-lg"
+                priority
               />
             </div>
             <div className="mt-4 text-center">

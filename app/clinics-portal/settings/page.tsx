@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Moon, Sun, Shield } from "lucide-react"
+import { Moon, Sun, Shield, LogOut } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
@@ -10,17 +10,35 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
+import { HeartbeatThrobber } from "@/components/heartbeat-throbber"
 
 export default function ClinicSettings() {
   const router = useRouter()
   const { toast } = useToast()
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  // Theme settings
   const [darkMode, setDarkMode] = useState(false)
+  const [language, setLanguage] = useState("english")
+
+  // Notification settings
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [smsNotifications, setSmsNotifications] = useState(true)
   const [appNotifications, setAppNotifications] = useState(true)
+
+  // Security settings
   const [twoFactorAuth, setTwoFactorAuth] = useState(true)
   const [hipaaCompliance, setHipaaCompliance] = useState(true)
-  const [language, setLanguage] = useState("english")
+
+  // Simulate loading data
+  useEffect(() => {
+    setLoading(true)
+    // Simulate API call to fetch clinic settings
+    setTimeout(() => {
+      setLoading(false)
+    }, 1500)
+  }, [])
 
   const handleDarkModeToggle = () => {
     setDarkMode(!darkMode)
@@ -42,10 +60,24 @@ export default function ClinicSettings() {
   }
 
   const saveSettings = () => {
-    toast({
-      title: "Settings saved",
-      description: "Your preferences have been updated successfully.",
-    })
+    setSaving(true)
+    // Simulate API call to save settings
+    setTimeout(() => {
+      setSaving(false)
+      toast({
+        title: "Settings saved",
+        description: "Your preferences have been updated successfully.",
+      })
+    }, 1000)
+  }
+
+  if (loading) {
+    return (
+      <div className="container mx-auto py-8 flex flex-col items-center justify-center min-h-[60vh]">
+        <HeartbeatThrobber size="lg" showText />
+        <p className="mt-4 text-muted-foreground">Loading clinic settings...</p>
+      </div>
+    )
   }
 
   return (
@@ -123,7 +155,10 @@ export default function ClinicSettings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={saveSettings}>Save Changes</Button>
+              <Button onClick={saveSettings} disabled={saving}>
+                {saving ? <HeartbeatThrobber className="mr-2" size="sm" /> : null}
+                Save Changes
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -194,7 +229,10 @@ export default function ClinicSettings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={saveSettings}>Save Changes</Button>
+              <Button onClick={saveSettings} disabled={saving}>
+                {saving ? <HeartbeatThrobber className="mr-2" size="sm" /> : null}
+                Save Changes
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -278,7 +316,10 @@ export default function ClinicSettings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={saveSettings}>Save Changes</Button>
+              <Button onClick={saveSettings} disabled={saving}>
+                {saving ? <HeartbeatThrobber className="mr-2" size="sm" /> : null}
+                Save Changes
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -349,7 +390,10 @@ export default function ClinicSettings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={saveSettings}>Save Changes</Button>
+              <Button onClick={saveSettings} disabled={saving}>
+                {saving ? <HeartbeatThrobber className="mr-2" size="sm" /> : null}
+                Save Changes
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -469,7 +513,10 @@ export default function ClinicSettings() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={saveSettings}>Save Changes</Button>
+              <Button onClick={saveSettings} disabled={saving}>
+                {saving ? <HeartbeatThrobber className="mr-2" size="sm" /> : null}
+                Save Changes
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -557,12 +604,20 @@ export default function ClinicSettings() {
             </CardContent>
             <CardFooter>
               <Button variant="outline" className="w-full" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
                 Log Out
               </Button>
             </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>
+
+      <div className="mt-8">
+        <Button variant="outline" className="w-full" onClick={handleLogout}>
+          <LogOut className="h-4 w-4 mr-2" />
+          Log Out
+        </Button>
+      </div>
     </div>
   )
 }
