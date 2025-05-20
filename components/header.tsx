@@ -43,6 +43,22 @@ export default function Header() {
     return pathname === path
   }
 
+  const navigationItems = [
+    { name: "Home", href: "/" },
+    { name: "Features", href: "/features" },
+    { name: "Pricing", href: "/pricing" },
+    { name: "About", href: "/about" },
+    { name: "Blog", href: "/blog" },
+    { name: "Contact", href: "/contact" },
+  ]
+
+  const portalItems = [
+    { name: "Patient Portal", href: "/patient-portal" },
+    { name: "Doctors Portal", href: "/doctors-portal" },
+    { name: "Clinics Portal", href: "/clinics-portal" },
+    { name: "Pharmacy Portal", href: "/pharmacy-portal" },
+  ]
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
@@ -55,54 +71,17 @@ export default function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          <Link
-            href="/"
-            className={`text-sm font-medium transition-colors hover:text-primary ${
-              isActive("/") ? "text-blue-600" : "text-muted-foreground"
-            }`}
-          >
-            Home
-          </Link>
-          <Link
-            href="/features"
-            className={`text-sm font-medium transition-colors hover:text-primary ${
-              isActive("/features") ? "text-blue-600" : "text-muted-foreground"
-            }`}
-          >
-            Features
-          </Link>
-          <Link
-            href="/devices"
-            className={`text-sm font-medium transition-colors hover:text-primary ${
-              isActive("/devices") ? "text-blue-600" : "text-muted-foreground"
-            }`}
-          >
-            Devices
-          </Link>
-          <Link
-            href="/pricing"
-            className={`text-sm font-medium transition-colors hover:text-primary ${
-              isActive("/pricing") ? "text-blue-600" : "text-muted-foreground"
-            }`}
-          >
-            Pricing
-          </Link>
-          <Link
-            href="/about"
-            className={`text-sm font-medium transition-colors hover:text-primary ${
-              isActive("/about") ? "text-blue-600" : "text-muted-foreground"
-            }`}
-          >
-            About
-          </Link>
-          <Link
-            href="/contact"
-            className={`text-sm font-medium transition-colors hover:text-primary ${
-              isActive("/contact") ? "text-blue-600" : "text-muted-foreground"
-            }`}
-          >
-            Contact
-          </Link>
+          {navigationItems.map((item) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                isActive(item.href) ? "text-blue-600" : "text-muted-foreground"
+              }`}
+            >
+              {item.name}
+            </Link>
+          ))}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -111,15 +90,11 @@ export default function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href="/patient-portal">Patient Portal</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/doctors-portal">Doctors Portal</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/clinics-portal">Clinics Portal</Link>
-              </DropdownMenuItem>
+              {portalItems.map((item) => (
+                <DropdownMenuItem asChild key={item.name}>
+                  <Link href={item.href}>{item.name}</Link>
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </nav>
@@ -169,85 +144,32 @@ export default function Header() {
         <div className="md:hidden border-t">
           <div className="container py-4 space-y-4">
             <nav className="flex flex-col space-y-4">
-              <Link
-                href="/"
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive("/") ? "text-blue-600" : "text-muted-foreground"
-                }`}
-                onClick={closeMenu}
-              >
-                Home
-              </Link>
-              <Link
-                href="/features"
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive("/features") ? "text-blue-600" : "text-muted-foreground"
-                }`}
-                onClick={closeMenu}
-              >
-                Features
-              </Link>
-              <Link
-                href="/devices"
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive("/devices") ? "text-blue-600" : "text-muted-foreground"
-                }`}
-                onClick={closeMenu}
-              >
-                Devices
-              </Link>
-              <Link
-                href="/pricing"
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive("/pricing") ? "text-blue-600" : "text-muted-foreground"
-                }`}
-                onClick={closeMenu}
-              >
-                Pricing
-              </Link>
-              <Link
-                href="/about"
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive("/about") ? "text-blue-600" : "text-muted-foreground"
-                }`}
-                onClick={closeMenu}
-              >
-                About
-              </Link>
-              <Link
-                href="/contact"
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive("/contact") ? "text-blue-600" : "text-muted-foreground"
-                }`}
-                onClick={closeMenu}
-              >
-                Contact
-              </Link>
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive(item.href) ? "text-blue-600" : "text-muted-foreground"
+                  }`}
+                  onClick={closeMenu}
+                >
+                  {item.name}
+                </Link>
+              ))}
 
               <div className="pt-2 border-t">
                 <p className="text-sm font-medium mb-2">Portals</p>
                 <div className="space-y-2 pl-2">
-                  <Link
-                    href="/patient-portal"
-                    className="block text-sm text-muted-foreground hover:text-primary"
-                    onClick={closeMenu}
-                  >
-                    Patient Portal
-                  </Link>
-                  <Link
-                    href="/doctors-portal"
-                    className="block text-sm text-muted-foreground hover:text-primary"
-                    onClick={closeMenu}
-                  >
-                    Doctors Portal
-                  </Link>
-                  <Link
-                    href="/clinics-portal"
-                    className="block text-sm text-muted-foreground hover:text-primary"
-                    onClick={closeMenu}
-                  >
-                    Clinics Portal
-                  </Link>
+                  {portalItems.map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className="block text-sm text-muted-foreground hover:text-primary"
+                      onClick={closeMenu}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
                 </div>
               </div>
             </nav>

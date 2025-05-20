@@ -40,6 +40,7 @@ import {
   CheckCircle,
   FileText,
   Upload,
+  MapPin,
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -464,6 +465,21 @@ export default function PatientPortalPage() {
             <p className="text-xs text-muted-foreground">Normal range</p>
           </CardContent>
         </Card>
+        <Link href="/patient-portal/pharmacies">
+          <Card className="hover:bg-gray-50 transition-colors">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <MapPin className="h-5 w-5 mr-2 text-blue-500" />
+                Find Pharmacies
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Browse and compare local pharmacies for your medication needs
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       <div className="mb-8">
